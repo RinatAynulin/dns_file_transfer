@@ -1,8 +1,8 @@
 package main
 
 import (
-	"InfoSec/Virus/Scaner"
-	"InfoSec/Virus/Resolver"
+	"client/Virus/Resolver"
+	"client/Virus/Scaner"
 	"fmt"
 	"runtime"
 )

