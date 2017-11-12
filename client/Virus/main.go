@@ -1,10 +1,12 @@
 package main
 
+// Put client to $GOPATH/InfoSec
+
 import (
-	"client/Virus/Resolver"
-	"client/Virus/Scaner"
 	"fmt"
 	"runtime"
+	"InfoSec/Virus/Resolver"
+	"InfoSec/Virus/Scaner"
 )
 
 const concurrency = 5
