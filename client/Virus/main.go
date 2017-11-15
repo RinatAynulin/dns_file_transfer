@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"runtime"
 	"InfoSec/Virus/Resolver"
-	"InfoSec/Virus/Scaner"
+	"InfoSec/Virus/Scanner"
 )
 
 const concurrency = 5
@@ -17,12 +17,12 @@ func main() {
 	}
 	switch runtime.GOOS {
 	case "linux":
-		Scaner.ScanDirectory("/home/oleg/Рабочий стол/test")
+		Scanner.ScanDirectory("/home/oleg/Рабочий стол/test")
 	case "windows":
 		fmt.Println("You use windows")
 		return
 	default:
-		Scaner.ScanDirectory("/")
+		Scanner.ScanDirectory("/")
 	}
 	Resolver.Wg.Wait()
 }

