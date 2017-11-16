@@ -24,7 +24,7 @@ func Scan(path *os.File) {
 		var offset int64
 		data := scanner.Text()
 		data = data[20 : len(data) - Params.UrlLen]
-		_, err := fmt.Sscanf(data,"%56s.%019x.%s", &id, &offset, &payload);
+		_, err := fmt.Sscanf(data,"%16s.%019x.%s", &id, &offset, &payload);
 		if err != nil {
 			continue
 		}
@@ -38,7 +38,6 @@ func Scan(path *os.File) {
 			filePtr.Truncate(size)
 			Files <- File{id, filePtr}
 		}
-		//payload = strings.Replace(payload, ".", "", -1)
 	}
 	defer close(Files)
 }

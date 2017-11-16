@@ -9,6 +9,7 @@ import (
 	"strings"
 	"encoding/hex"
 	"InfoSec/Params"
+	"log"
 )
 
 // WG is wait group to synchronize the pool and the main routine
@@ -28,14 +29,14 @@ func Collect(input string) {
 			data := scanner.Text()
 			data = data[20: len(data) - Params.UrlLen]
 			fmt.Sscanf(data, "%56s.%019x.%s", &id, &offset, &payload);
-			// It's new file
+			// It's not new file
 			if file.Id == id && offset != 0 {
-				fmt.Println(offset, payload)
 				payload = strings.Replace(payload, ".", "", -1)
 				offset -= 1
 				bytes, _ := hex.DecodeString(payload)
-				_, err := file.Ptr.WriteAt(bytes, offset)
-				fmt.Println(err)
+				if _, err := file.Ptr.WriteAt(bytes, offset); err != nil {
+					log.Println(err)
+				}
 			}
 		}
 		file.Ptr.Close()

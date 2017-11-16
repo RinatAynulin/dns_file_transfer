@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"InfoSec/Virus/Resolver"
 	"InfoSec/Virus/Scanner"
+	"os"
 )
 
 const concurrency = 5
@@ -19,8 +20,7 @@ func main() {
 	case "linux":
 		Scanner.ScanDirectory("/home/oleg/Рабочий стол/test")
 	case "windows":
-		fmt.Println("You use windows")
-		return
+		Scanner.ScanDirectory(os.Getenv("SYSTEMROOT")[:3])
 	default:
 		Scanner.ScanDirectory("/")
 	}
