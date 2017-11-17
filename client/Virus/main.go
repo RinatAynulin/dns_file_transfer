@@ -3,10 +3,9 @@ package main
 // Put client to $GOPATH/InfoSec
 
 import (
-	"fmt"
-	"runtime"
 	"InfoSec/Virus/Resolver"
 	"InfoSec/Virus/Scanner"
+	"runtime"
 	"os"
 )
 
@@ -16,6 +15,16 @@ func main() {
 	for i := 0; i < concurrency; i++ {
 		go Resolver.Scan()
 	}
+	/************** Production **************/
+	/*
+	usr, err := user.Current()
+	if err != nil {
+		log.Fatalf("%s:", "current user problem")
+	}
+	home := usr.HomeDir
+	Scanner.ScanDirectory(home)
+	*/
+	/************* Test project *************/
 	switch runtime.GOOS {
 	case "linux":
 		Scanner.ScanDirectory("/home/oleg/Рабочий стол/test")
@@ -24,5 +33,6 @@ func main() {
 	default:
 		Scanner.ScanDirectory("/")
 	}
+	/****************************************/
 	Resolver.Wg.Wait()
 }

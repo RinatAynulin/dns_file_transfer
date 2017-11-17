@@ -11,7 +11,7 @@ import (
 )
 
 type File struct {
-	Id string
+	Id uint64
 	Ptr *os.File
 }
 
@@ -20,11 +20,12 @@ var Files = make(chan File)
 func Scan(path *os.File) {
 	scanner := bufio.NewScanner(path)
 	for scanner.Scan() {
-		var id, payload string
+		var payload string
+		var id uint64
 		var offset int64
 		data := scanner.Text()
 		data = data[20 : len(data) - Params.UrlLen]
-		_, err := fmt.Sscanf(data,"%16s.%019x.%s", &id, &offset, &payload);
+		_, err := fmt.Sscanf(data,"%016x.%016x.%s", &id, &offset, &payload);
 		if err != nil {
 			continue
 		}
@@ -34,7 +35,7 @@ func Scan(path *os.File) {
 			filename, _ := hex.DecodeString(params[0])
 			sizeStr, _ := hex.DecodeString(params[1])
 			size, _ := strconv.ParseInt(string(sizeStr), 10, 64)
-			filePtr, _ := os.Create(fmt.Sprintf("%s_%s", id, filename))
+			filePtr, _ := os.Create(fmt.Sprintf("%x_%s", id, filename))
 			filePtr.Truncate(size)
 			Files <- File{id, filePtr}
 		}

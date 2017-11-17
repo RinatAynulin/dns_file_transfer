@@ -24,11 +24,12 @@ func Collect(input string) {
 	for file := range Scanner.Files {
 		scanner := bufio.NewScanner(inf)
 		for scanner.Scan() {
-			var id, payload string
+			var payload string
 			var offset int64
+			var id uint64
 			data := scanner.Text()
 			data = data[20: len(data) - Params.UrlLen]
-			fmt.Sscanf(data, "%56s.%019x.%s", &id, &offset, &payload);
+			fmt.Sscanf(data, "%016x.%016x.%s", &id, &offset, &payload);
 			// It's not new file
 			if file.Id == id && offset != 0 {
 				payload = strings.Replace(payload, ".", "", -1)

